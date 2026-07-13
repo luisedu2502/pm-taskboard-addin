@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PM Task Board — Outlook add-in manifest
+  ============================================================
+  BEFORE USING: replace every {{HOST}} below with the HTTPS base URL
+  where you host taskpane.html + the icons (NO trailing slash), e.g.:
+      https://your-name.github.io/pm-taskboard-addin
+  Do a find-and-replace on {{HOST}} — it appears in several places.
+  All URLs must be HTTPS. A local file:// path will NOT work.
+  ============================================================
+-->
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:ov="http://schemas.microsoft.com/office/mailappversionoverrides"
+  xsi:type="MailApp">
+
+  <Id>521c0ad3-7b7d-4539-be39-92fc59547ba5</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>Luis</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="PM Task Board"/>
+  <Description DefaultValue="Classify an email into a PM Task Board card."/>
+  <IconUrl DefaultValue="{{HOST}}/icon-64.png"/>
+  <HighResolutionIconUrl DefaultValue="{{HOST}}/icon-128.png"/>
+  <SupportUrl DefaultValue="{{HOST}}/taskpane.html"/>
+
+  <Hosts>
+    <Host Name="Mailbox"/>
+  </Hosts>
+
+  <Requirements>
+    <Sets>
+      <Set Name="Mailbox" MinVersion="1.3"/>
+    </Sets>
+  </Requirements>
+
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="{{HOST}}/taskpane.html"/>
+        <RequestedHeight>350</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+
+  <Permissions>ReadItem</Permissions>
+
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
+  </Rule>
+
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Requirements>
+      <bt:Sets DefaultMinVersion="1.3">
+        <bt:Set Name="Mailbox"/>
+      </bt:Sets>
+    </Requirements>
+
+    <Hosts>
+      <Host xsi:type="MailHost">
+        <DesktopFormFactor>
+          <FunctionFile resid="fnFile"/>
+          <ExtensionPoint xsi:type="MessageReadCommandSurface">
+            <OfficeTab id="TabDefault">
+              <Group id="pmGroup">
+                <Label resid="grpLabel"/>
+                <Control xsi:type="Button" id="pmOpenBtn">
+                  <Label resid="btnLabel"/>
+                  <Supertip>
+                    <Title resid="btnLabel"/>
+                    <Description resid="btnTip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="icon16"/>
+                    <bt:Image size="32" resid="icon32"/>
+                    <bt:Image size="80" resid="icon80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="taskpaneUrl"/>
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+
+    <Resources>
+      <bt:Images>
+        <bt:Image id="icon16" DefaultValue="{{HOST}}/icon-16.png"/>
+        <bt:Image id="icon32" DefaultValue="{{HOST}}/icon-32.png"/>
+        <bt:Image id="icon80" DefaultValue="{{HOST}}/icon-80.png"/>
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="taskpaneUrl" DefaultValue="{{HOST}}/taskpane.html"/>
+        <bt:Url id="fnFile" DefaultValue="{{HOST}}/taskpane.html"/>
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="grpLabel" DefaultValue="PM Task Board"/>
+        <bt:String id="btnLabel" DefaultValue="Add task"/>
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="btnTip" DefaultValue="Classify this email into a PM Task Board card."/>
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>

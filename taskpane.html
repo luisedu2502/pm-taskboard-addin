@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PM Task Board</title>
+<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+<style>
+  :root{
+    --navy:#16233b; --navy-2:#22344f; --petrol:#1f6f7a; --petrol-ink:#12525b;
+    --peach:#e8945f; --peach-soft:#fbe7d6; --paper:#fff; --pane:#fafafa;
+    --line:#e6e4e1; --muted:#70757c; --ink:#1f2733; --ok:#2e7d5b;
+    --font:'Segoe UI', Inter, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0; font-family:var(--font); color:var(--ink); background:var(--pane);
+    -webkit-font-smoothing:antialiased; display:flex; flex-direction:column}
+  .pane-bar{display:flex; align-items:center; gap:10px; padding:12px 14px;
+    background:var(--navy); color:#fff}
+  .logo{width:26px;height:26px;border-radius:6px;background:#fff;color:var(--navy);
+    font-weight:800; font-size:12px; display:flex; align-items:center; justify-content:center}
+  .pane-bar .t{font-size:13.5px; font-weight:600}
+  .pane-bar .s{font-size:11px; color:#b9c4d6; margin-top:1px}
+  .scroll{flex:1 1 auto; overflow:auto; padding:14px 16px 8px}
+  .source{display:flex; gap:10px; padding:10px 12px; border-radius:10px;
+    background:var(--peach-soft); border:1px solid #f3d6bf; margin-bottom:16px}
+  .source .ic{flex:0 0 auto; width:26px;height:26px;border-radius:6px;background:var(--peach);
+    color:#fff; display:flex; align-items:center; justify-content:center}
+  .source .lab{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:#a15a2a; font-weight:700}
+  .source .val{font-size:12.5px; color:#5a3a22; margin-top:2px; line-height:1.35;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+  .field{margin-bottom:14px}
+  .field>label{display:block; font-size:11.5px; font-weight:700; color:var(--navy-2); margin-bottom:5px}
+  .field .hint{font-size:11px; color:var(--ok); margin-top:4px}
+  input[type=text],input[type=number],textarea,select{width:100%; font-family:var(--font);
+    font-size:13.5px; color:var(--ink); background:var(--paper); border:1px solid var(--line);
+    border-radius:8px; padding:9px 11px; outline:none; transition:border-color .12s, box-shadow .12s}
+  textarea{resize:vertical; min-height:64px; line-height:1.5}
+  input:focus,textarea:focus,select:focus{border-color:var(--petrol); box-shadow:0 0 0 3px rgba(31,111,122,.14)}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .rowline{display:flex; align-items:center; gap:8px; margin-top:8px}
+  .rowline .lb{font-size:11px; color:var(--muted)}
+  .badge{display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:700;
+    padding:5px 11px; border-radius:999px; border:1px solid transparent}
+  .badge .d{width:7px;height:7px;border-radius:50%}
+  .badge.q{background:rgba(31,111,122,.10); color:var(--petrol-ink); border-color:rgba(31,111,122,.25)}
+  .badge.q .d{background:var(--petrol)}
+  .badge.p{background:var(--peach-soft); color:#a15a2a; border-color:#f0cdb2}
+  .badge.p .d{background:var(--peach)}
+  .badge.o{background:#eceef1; color:#5b6270; border-color:#dfe2e7}
+  .badge.o .d{background:#9aa1ac}
+  .seg{display:flex; gap:6px; flex-wrap:wrap}
+  .seg button{flex:1 1 auto; min-width:64px; font-family:var(--font); font-size:12px; font-weight:600;
+    padding:8px 6px; border:1px solid var(--line); border-radius:8px; background:#fff;
+    color:var(--navy-2); cursor:pointer; transition:all .12s; line-height:1.15}
+  .seg button .wk{display:block; font-size:9.5px; color:var(--muted); margin-top:2px}
+  .seg button:hover{border-color:var(--petrol)}
+  .seg button.on{background:var(--navy); color:#fff; border-color:var(--navy)}
+  .seg button.on .wk{color:#b9c4d6}
+  .sub{display:flex; align-items:center; gap:9px; padding:6px 0}
+  .sub input[type=checkbox]{width:16px;height:16px; accent-color:var(--petrol)}
+  .sub span{font-size:13px}
+  .sub.done span{text-decoration:line-through; color:var(--muted)}
+  .sub .del{margin-left:auto; border:0; background:transparent; color:#c2c6cc; cursor:pointer; font-size:15px}
+  .sub .del:hover{color:#d9534f}
+  .addsub{display:flex; gap:8px; margin-top:6px}
+  .addsub input{flex:1}
+  .addsub button{flex:0 0 auto; width:38px; border:1px dashed var(--line); border-radius:8px;
+    background:#fff; color:var(--petrol); font-size:18px; cursor:pointer}
+  .addsub button:hover{border-color:var(--petrol); background:rgba(31,111,122,.06)}
+  .step{display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:8px; overflow:hidden}
+  .step button{width:34px;height:36px;border:0; background:#fff; color:var(--navy-2); font-size:16px; cursor:pointer}
+  .step button:hover{background:#f2f4f6}
+  .step .n{min-width:40px; text-align:center; font-size:13.5px; font-weight:700}
+  .foot{flex:0 0 auto; display:flex; gap:10px; padding:12px 16px; border-top:1px solid var(--line); background:var(--pane)}
+  .btn{font-family:var(--font); font-size:13.5px; font-weight:600; border-radius:8px; padding:10px 14px;
+    cursor:pointer; border:1px solid var(--line); background:#fff; color:var(--navy-2)}
+  .btn.ghost:hover{background:#f2f4f6}
+  .btn.primary{flex:1; border-color:var(--petrol); background:var(--petrol); color:#fff}
+  .btn.primary:hover{background:var(--petrol-ink)}
+  .toast{position:fixed; left:12px; right:12px; bottom:12px; background:var(--navy); color:#fff;
+    border-radius:10px; padding:11px 14px; font-size:12.5px; display:flex; align-items:center; gap:10px;
+    transform:translateY(20px); opacity:0; pointer-events:none; transition:all .22s}
+  .toast.show{transform:translateY(0); opacity:1}
+  .toast .tick{width:20px;height:20px;border-radius:50%;background:var(--ok);color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:12px; flex:0 0 auto}
+  .toast small{display:block; color:#b9c4d6; margin-top:2px; font-size:11px}
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+  :focus-visible{outline:2px solid var(--petrol); outline-offset:1px}
+</style>
+</head>
+<body>
+  <div class="pane-bar">
+    <span class="logo">PM</span>
+    <div><div class="t">PM Task Board</div><div class="s">Adicionar a partir do email</div></div>
+  </div>
+
+  <div class="scroll">
+    <div class="source">
+      <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4z"/><path d="M4 7l8 6 8-6"/></svg></span>
+      <div><div class="lab">Deste email</div><div class="val" id="srcVal">Carregando…</div></div>
+    </div>
+
+    <div class="field">
+      <label for="fTitle">Título da tarefa</label>
+      <input type="text" id="fTitle" placeholder="Título">
+    </div>
+
+    <div class="field">
+      <label for="fProject">Classificação / Projeto</label>
+      <input type="text" id="fProject" list="projList" placeholder="Ex.: PC06 PIL-482913 Alternator" autocomplete="off">
+      <datalist id="projList"></datalist>
+      <div class="rowline"><span class="lb">Linha:</span>
+        <span class="badge o" id="rowBadge"><span class="d"></span><span id="rowTxt">Other</span></span></div>
+    </div>
+
+    <div class="field">
+      <label for="fWbs">WBS</label>
+      <input type="text" id="fWbs" placeholder="Preenchido pelo projeto">
+      <div class="hint" id="wbsHint" style="display:none"></div>
+    </div>
+
+    <div class="field">
+      <label>Coluna</label>
+      <div class="seg" id="seg">
+        <button data-b="TODAY">Today Prio<span class="wk" id="segWk"></span></button>
+        <button data-b="THIS" class="on">This Week</button>
+        <button data-b="NEXT">Next Week</button>
+        <button data-b="PI">PI atual</button>
+        <button data-b="BACKLOG">Backlog</button>
+      </div>
+    </div>
+
+    <div class="field two">
+      <div><label for="fEst">Estimativa (h)</label><input type="number" id="fEst" min="0" step="0.5" placeholder="0"></div>
+      <div><label for="fPomo">Pomodoros</label><input type="number" id="fPomo" min="0" step="1" placeholder="0"></div>
+    </div>
+
+    <div class="field">
+      <label>Subtarefas</label>
+      <div id="subs"></div>
+      <div class="addsub"><input type="text" id="subIn" placeholder="Adicionar subtarefa…"><button id="subAdd">+</button></div>
+    </div>
+
+    <div class="field">
+      <label>Report</label>
+      <div class="step"><button id="repMinus">−</button><span class="n" id="repN">0</span><button id="repPlus">+</button></div>
+    </div>
+
+    <div class="field">
+      <label for="fNotes">Notas</label>
+      <textarea id="fNotes" placeholder="Contexto, links, referência do email…"></textarea>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="btn ghost" id="btnCancel">Limpar</button>
+    <button class="btn primary" id="btnAdd">Adicionar ao quadro</button>
+  </div>
+
+  <div class="toast" id="toast"><span class="tick">✓</span>
+    <div><b>Tarefa pronta</b><small>Protótipo — não conectado ao quadro ainda</small></div></div>
+
+<script>
+const PROJECTS={
+  "PC06 Alternator field test":"WBS-06.ALT.2026","PC06 Brake calibration":"WBS-06.BRK.2026",
+  "PC24 Remote condenser":"WBS-24.RCN.2026","PC24 Cooling system":"WBS-24.COOL.2026",
+  "Boss reservations":"WBS-INFRA.BOSS","PI Planning":"WBS-PMO.PI"};
+let bucket="THIS", report=0, subtasks=[], wbsTouched=false;
+const $=s=>document.querySelector(s);
+const fTitle=$("#fTitle"),fProject=$("#fProject"),fWbs=$("#fWbs"),fNotes=$("#fNotes"),
+      srcVal=$("#srcVal"),rowBadge=$("#rowBadge"),rowTxt=$("#rowTxt"),wbsHint=$("#wbsHint");
+$("#projList").innerHTML=Object.keys(PROJECTS).map(p=>`<option value="${p}">`).join("");
+
+function isoWeek(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-day);
+  const ys=new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return{yy:t.getUTCFullYear()%100,wk:Math.ceil((((t-ys)/86400000)+1)/7),d:day};}
+function todayCode(){const i=isoWeek(new Date());
+  return"w"+String(i.yy).padStart(2,"0")+String(i.wk).padStart(2,"0")+"."+i.d;}
+$("#segWk").textContent=todayCode();
+
+function rowFor(raw){const U=(raw||"").toUpperCase();
+  const veh=U.includes("PC06")?"PC06":U.includes("PC24")?"PC24":null;
+  if(!veh)return{label:"Other",cls:"o"};
+  const rest=U.replace(/PC06|PC24/g,"").trim(); if(!rest)return{label:"Other",cls:"o"};
+  if(/PIL/.test(U))return{label:veh+" · Quality",cls:"q"};
+  return{label:veh+" · PMR",cls:"p"};}
+
+function applyClassification(){
+  const r=rowFor(fProject.value); rowBadge.className="badge "+r.cls; rowTxt.textContent=r.label;
+  if(!wbsTouched){
+    const key=Object.keys(PROJECTS).find(p=>{const a=p.toLowerCase(),b=fProject.value.toLowerCase();
+      return b.includes(a)||a.includes(b);});
+    if(key){fWbs.value=PROJECTS[key]; wbsHint.style.display="block"; wbsHint.textContent=`WBS preenchido de "${key}"`;}
+  }
+}
+fProject.addEventListener("input",()=>{wbsTouched=false; wbsHint.style.display="none"; applyClassification();});
+fWbs.addEventListener("input",()=>{wbsTouched=true; wbsHint.style.display="none";});
+$("#seg").addEventListener("click",e=>{const b=e.target.closest("button"); if(!b)return;
+  $("#seg").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); bucket=b.dataset.b;});
+
+function renderSubs(){const box=$("#subs"); box.innerHTML="";
+  subtasks.forEach((s,i)=>{const row=document.createElement("div"); row.className="sub"+(s.done?" done":"");
+    row.innerHTML=`<input type="checkbox" ${s.done?"checked":""}><span>${s.text}</span><button class="del">×</button>`;
+    row.querySelector("input").addEventListener("change",()=>{s.done=!s.done; renderSubs();});
+    row.querySelector(".del").addEventListener("click",()=>{subtasks.splice(i,1); renderSubs();});
+    box.appendChild(row);});}
+function addSub(){const v=$("#subIn").value.trim(); if(!v)return;
+  subtasks.push({text:v,done:false}); $("#subIn").value=""; renderSubs(); $("#subIn").focus();}
+$("#subAdd").addEventListener("click",addSub);
+$("#subIn").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault(); addSub();}});
+$("#repPlus").addEventListener("click",()=>{report++; $("#repN").textContent=report;});
+$("#repMinus").addEventListener("click",()=>{report=Math.max(0,report-1); $("#repN").textContent=report;});
+const toast=$("#toast");
+$("#btnAdd").addEventListener("click",()=>{toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"),2600);});
+$("#btnCancel").addEventListener("click",()=>{subtasks=[]; renderSubs(); report=0; $("#repN").textContent="0";});
+
+/* ---------- read the selected email (real Outlook) ---------- */
+function prefillFrom(subject, fromName){
+  srcVal.textContent = (fromName?fromName+" — ":"") + (subject||"(sem assunto)");
+  fTitle.value = (subject||"").replace(/^(RE:|FW:|ENC:|RES:)\s*/i,"").trim();
+  // seed classification guess from subject
+  fProject.value = subject || "";
+  fNotes.value = fromName ? `Ref.: email de ${fromName} — "${subject}".` : "";
+  applyClassification();
+}
+if(window.Office && Office.onReady){
+  Office.onReady(()=>{
+    try{
+      const item=Office.context.mailbox.item;
+      const subject=item.subject;
+      const fromName=item.from ? item.from.displayName : (item.organizer?item.organizer.displayName:"");
+      prefillFrom(subject, fromName);
+    }catch(e){ srcVal.textContent="(sem email selecionado)"; }
+  });
+}else{
+  // opened outside Outlook (e.g. direct browser test)
+  prefillFrom("PC06 PIL-482913 — Alternator field test week update","Field Test Coordination");
+}
+</script>
+</body>
+</html>
